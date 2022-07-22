@@ -8,6 +8,7 @@ const path = require('path');
 // Routers
 const { usersRouter } = require('./routes/users.routes');
 const { productsRouter } = require('./routes/products.routes');
+const { cartsRouter } = require('./routes/carts.routes');
 
 // Global err controller
 const { globalErrorHandler } = require('./controllers/error.controller');
@@ -50,6 +51,7 @@ else app.use(morgan('combined'));
 // Define endpoints
 app.use('/api/v1/users', usersRouter);
 app.use('/api/v1/users', productsRouter);
+app.use('/api/v1/cart', cartsRouter);
 
 // Handle incoming unknown routes to the server
 app.all('*', (req, res, next) => {
