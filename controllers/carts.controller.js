@@ -12,7 +12,6 @@ const { AppError } = require('../utils/appError.util');
 const addProduct = catchAsync(async (req, res, next) => {
   const { sessionUser } = req;
   const { productId, quantity } = req.body;
-
   const findCart = await Cart.findOne({
     where: { userId: sessionUser.id, status: 'active' },
   });
@@ -22,37 +21,56 @@ const addProduct = catchAsync(async (req, res, next) => {
       userId: sessionUser.id,
     });
     const selectedProduct = await Product.findOne({
-      where: { id: productId },
+      where: { id: productId, status: 'active' },
     });
+    if (!selectedProduct) {
+      return next(new AppError('This product its not available'));
+    }
     if (selectedProduct.quantity < quantity) {
       return next(new AppError('We are out of stock please check again', 400));
     }
     const cart = await ProductInCart.create({
-      productId,
       cartId: newCart.id,
+      productId: selectedProduct.id,
+      quantity,
+    });
+    res.status(201).json({
+      status: 'success',
+      message: 'Product added to cart and cart created',
+      cart,
     });
   } else {
     const cart = await ProductInCart.findOne({
       where: { cartId: findCart.id },
     });
-    if (cart.productId === productId && cart.status === 'active') {
+    if (cart.dataValues.productId === productId && cart.status === 'active') {
       return next(new AppError('This product already exist in cart', 400));
-    } else if (cart.productId === productId && cart.status === 'removed') {
-      await ProductInCart.update({
+    } else if (
+      cart.dataValues.productId === productId &&
+      cart.dataValue.status === 'removed'
+    ) {
+      await cart.update({
         quantity,
         status: 'active',
       });
+    } else if (cart.dataValues.productId !== productId) {
+      const createProductIncart = await ProductInCart.create({
+        cartId: cart.dataValues.id,
+        productId,
+        quantity,
+      });
     }
+    res.status(201).json({
+      status: 'success',
+      message: 'Product added to cart',
+      cart,
+    });
   }
-
-  res.status(204).json({
-    status: 'success',
-    message: 'Product added to cart',
-  });
 });
+
 const updateCart = catchAsync(async (req, res, next) => {
   const { sessionUser } = req;
-  const { productId, newQty } = req.body;
+  const { productId, quantity: newQty } = req.body;
 
   const findCart = await Cart.findOne({
     where: { userId: sessionUser.id, status: 'active' },
@@ -78,13 +96,19 @@ const updateCart = catchAsync(async (req, res, next) => {
   }
 
   if (newQty === 0) {
-    findProductInCart.status = 'removed';
+    await findProductInCart.update({
+      status: 'removed',
+    });
   } else {
-    findProductInCart.quantity = newQty;
-    findProductInCart.status = 'active';
+    await findProductInCart.update({
+      quantity: newQty,
+      status: 'active',
+    });
   }
 
-  res.status(204).json({});
+  res.status(201).json({
+    findProductInCart,
+  });
 });
 const deleteProduct = catchAsync(async (req, res, next) => {
   const { productId } = req.params;
@@ -105,18 +129,48 @@ const deleteProduct = catchAsync(async (req, res, next) => {
     return next(new AppError('Not product found in cart', 400));
   }
 
+  await findProductInCart.update({
+    quantity: 0,
+    status: 'removed',
+  });
+
   res.status(204).json({});
 });
 const purchase = catchAsync(async (req, res, next) => {
   const { sessionUser } = req;
-  const findCart = await Cart.findOne({
+  const findCart = await Cart.findAll({
     where: { userId: sessionUser.id, status: 'active' },
-    include: [{ model: ProductInCart, where: { status: 'active' } }],
+    attributes: ['id', 'userId', 'status'],
+    include: [
+      {
+        model: ProductInCart,
+        where: { status: 'active' },
+        attributes: ['id', 'cartId', 'productId', 'quantity', 'status'],
+        required: false,
+        include: [
+          {
+            model: Product,
+            required: false,
+            where: { status: 'active' },
+            attributes: [
+              'title',
+              'description',
+              'price',
+              'categoryId',
+              'quantity',
+            ],
+          },
+        ],
+      },
+    ],
   });
-  // ! falta la logica de recorrer arreglo, primero probar endpoints y luego crear contenido en la db para poder hacer la logica
   if (!findCart) {
     return next(new AppError('Not active cart found', 400));
   }
+
+  res.status(200).json({
+    findCart,
+  });
 });
 
-module.exports = { addProduct, updateCart, deleteProduct, purchase }
+module.exports = { addProduct, updateCart, deleteProduct, purchase };

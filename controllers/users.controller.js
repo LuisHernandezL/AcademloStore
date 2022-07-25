@@ -19,9 +19,9 @@ const { Email } = require('../utils/email.util');
 dotenv.config({ path: './config.env' });
 
 const getUserProducts = catchAsync(async (req, res, next) => {
-  const { userSession } = req;
+  const { sessionUser } = req;
   const userProduct = await Product.findAll({
-    where: { userId: userSession.id },
+    where: { userId: sessionUser.id },
   });
 
   if (!userProduct) {

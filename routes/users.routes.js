@@ -16,7 +16,10 @@ const {
   createUserValidators,
 } = require('../middlewares/validators.middleware');
 const { userExists } = require('../middlewares/users.middleware');
-const { protectSession } = require('../middlewares/auth.middleware');
+const {
+  protectSession,
+  protectUserAccount,
+} = require('../middlewares/auth.middleware');
 
 const usersRouter = express.Router();
 
@@ -33,7 +36,7 @@ usersRouter.get('/orders/:id', getOrderById);
 usersRouter
   .use('/:id', userExists)
   .route('/:id')
-  .patch(updateUser)
-  .delete(deleteUser);
+  .patch(protectUserAccount, updateUser)
+  .delete(protectUserAccount, deleteUser);
 
 module.exports = { usersRouter };

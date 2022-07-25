@@ -50,7 +50,7 @@ else app.use(morgan('combined'));
 
 // Define endpoints
 app.use('/api/v1/users', usersRouter);
-app.use('/api/v1/users', productsRouter);
+app.use('/api/v1/products', productsRouter);
 app.use('/api/v1/cart', cartsRouter);
 
 // Handle incoming unknown routes to the server

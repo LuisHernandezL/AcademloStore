@@ -28,4 +28,13 @@ const createUserValidators = [
   checkResult,
 ];
 
-module.exports = { createUserValidators };
+const createProductValidators = [
+  body('title').notEmpty().withMessage('Title cannot be empty'),
+  body('description').notEmpty().withMessage('Description cannot be empty'),
+  body('price').notEmpty().withMessage('Price cannot be empty'),
+  body('categoryId').notEmpty().withMessage('CategoryId cannot be empty'),
+  body('quantity').notEmpty().withMessage('Quantity cannot be empty'),
+  checkResult,
+];
+
+module.exports = { createUserValidators, createProductValidators };
