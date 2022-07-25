@@ -118,3 +118,5 @@ const purchase = catchAsync(async (req, res, next) => {
     return next(new AppError('Not active cart found', 400));
   }
 });
+
+module.exports = { addProduct, updateCart, deleteProduct, purchase }
