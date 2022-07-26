@@ -27,8 +27,8 @@ const {
 } = require('../middlewares/validators.middleware');
 
 productsRouter.get('/', allProducts);
-productsRouter.get('/:id', productExist, productById);
 productsRouter.get('/categories', productsCategories);
+productsRouter.get('/:id', productExist, productById);
 
 //protected end points
 productsRouter.use(protectSession);

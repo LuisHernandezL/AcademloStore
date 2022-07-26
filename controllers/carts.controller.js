@@ -1,6 +1,5 @@
 //models
 const { Cart } = require('../models/cart.model');
-
 const { ProductInCart } = require('../models/productInCart.model');
 const { Product } = require('../models/product.model');
 
@@ -12,65 +11,80 @@ const { AppError } = require('../utils/appError.util');
 const addProduct = catchAsync(async (req, res, next) => {
   const { sessionUser } = req;
   const { productId, quantity } = req.body;
-  const findCart = await Cart.findOne({
+
+  const product = await Product.findOne({
+    where: { id: productId, status: 'active' },
+  });
+
+  if (!product) {
+    return next(new AppError('Invalid product', 404));
+  } else if (quantity > product.quantity) {
+    return next(
+      new AppError(`This product only has ${product.quantity} items on stock`)
+    );
+  }
+
+  const cart = await Cart.findOne({
     where: { userId: sessionUser.id, status: 'active' },
   });
 
-  if (!findCart) {
+  if (!cart) {
     const newCart = await Cart.create({
       userId: sessionUser.id,
     });
-    const selectedProduct = await Product.findOne({
-      where: { id: productId, status: 'active' },
-    });
-    if (!selectedProduct) {
-      return next(new AppError('This product its not available'));
-    }
-    if (selectedProduct.quantity < quantity) {
-      return next(new AppError('We are out of stock please check again', 400));
-    }
-    const cart = await ProductInCart.create({
+
+    await ProductInCart.create({
       cartId: newCart.id,
-      productId: selectedProduct.id,
+      productId,
       quantity,
     });
-    res.status(201).json({
-      status: 'success',
-      message: 'Product added to cart and cart created',
-      cart,
+  }
+
+  if (cart) {
+    const productExist = await ProductInCart.findOne({
+      where: { cartId: cart.id, productId },
     });
-  } else {
-    const cart = await ProductInCart.findOne({
-      where: { cartId: findCart.id },
-    });
-    if (cart.dataValues.productId === productId && cart.status === 'active') {
-      return next(new AppError('This product already exist in cart', 400));
-    } else if (
-      cart.dataValues.productId === productId &&
-      cart.dataValue.status === 'removed'
-    ) {
-      await cart.update({
-        quantity,
-        status: 'active',
-      });
-    } else if (cart.dataValues.productId !== productId) {
-      const createProductIncart = await ProductInCart.create({
-        cartId: cart.dataValues.id,
+
+    if (!productExist) {
+      await ProductInCart.create({
+        cartId: cart.id,
         productId,
         quantity,
       });
+
+      return res.status(200).json({
+        status: 'success',
+      });
     }
-    res.status(201).json({
-      status: 'success',
-      message: 'Product added to cart',
-      cart,
-    });
+
+    if (productExist.status === 'removed') {
+      await productExist.update({
+        status: 'active',
+        quantity,
+      });
+
+      return res.status(200).json({
+        status: 'success',
+        messsage: 'Product added',
+      });
+    }
+
+    if (productExist.status === 'active') {
+      return next(new AppError('This product already exist', 400));
+    }
   }
 });
 
 const updateCart = catchAsync(async (req, res, next) => {
   const { sessionUser } = req;
-  const { productId, quantity: newQty } = req.body;
+  const { productId, quantity } = req.body;
+
+  const productQty = await Product.findOne({
+    where: { id: productId },
+  });
+  if (productQty.quantity < quantity) {
+    return next(new AppError('this product is out of stock', 400));
+  }
 
   const findCart = await Cart.findOne({
     where: { userId: sessionUser.id, status: 'active' },
@@ -81,32 +95,30 @@ const updateCart = catchAsync(async (req, res, next) => {
   }
 
   const findProductInCart = await ProductInCart.findOne({
-    where: { cartId: findCart.id, status: 'active' },
+    where: { productId },
   });
 
   if (!findProductInCart) {
     return next(new AppError('This user dont have this product on cart', 400));
   }
 
-  const productQty = await Product.findOne({
-    where: { id: productId },
-  });
-  if (productQty.quantity < newQty) {
-    return next(new AppError('this product is out of stock', 400));
-  }
-
-  if (newQty === 0) {
+  if (quantity === 0) {
     await findProductInCart.update({
+      quantity: 0,
       status: 'removed',
     });
-  } else {
+  }
+
+  if (quantity > 0) {
     await findProductInCart.update({
-      quantity: newQty,
+      quantity,
       status: 'active',
     });
   }
 
   res.status(201).json({
+    status: 'success',
+    message: 'product edited',
     findProductInCart,
   });
 });
@@ -134,7 +146,10 @@ const deleteProduct = catchAsync(async (req, res, next) => {
     status: 'removed',
   });
 
-  res.status(204).json({});
+  res.status(201).json({
+    status: 'success',
+    message: 'Product deleted',
+  });
 });
 const purchase = catchAsync(async (req, res, next) => {
   const { sessionUser } = req;
@@ -168,9 +183,44 @@ const purchase = catchAsync(async (req, res, next) => {
     return next(new AppError('Not active cart found', 400));
   }
 
+  let total = [];
+  for (let index = 0; index < findCart[0].productInCarts.length; index++) {
+    console.log(findCart[0].productInCarts[index].dataValues?.quantity);
+    console.log(findCart[0].productInCarts[index].dataValues?.product.price);
+
+    let mult =
+      findCart[0].productInCarts[index].dataValues?.quantity *
+      findCart[0].productInCarts[index].dataValues?.product.price;
+  }
+
+  const updateQtyOnProduct = findCart[0].productInCarts.map(async (product) => {
+    const findProduct = await Product.findOne({
+      where: { id: product.dataValues.productId, status: 'active' },
+    });
+    const resta = findProduct.quantity - product.dataValues.quantity;
+    await findProduct.update({
+      quantity: resta,
+    });
+
+    return await product.update({ status: 'purchased' });
+  });
+  await findCart[0].update({
+    status: 'purchased',
+  });
+
+  await Promise.all(updateQtyOnProduct);
+
   res.status(200).json({
+    status: 'success',
+    message: 'Purchased',
     findCart,
+    price,
   });
 });
 
-module.exports = { addProduct, updateCart, deleteProduct, purchase };
+module.exports = {
+  addProduct,
+  updateCart,
+  deleteProduct,
+  purchase,
+};

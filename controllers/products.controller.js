@@ -36,7 +36,10 @@ const newProduct = catchAsync(async (req, res, next) => {
 });
 
 const allProducts = catchAsync(async (req, res, next) => {
-  const data = await Product.findAll({ where: { status: 'active' } });
+  const data = await Product.findAll({
+    where: { status: 'active' },
+    include: [{ model: Categorie, required: false }],
+  });
 
   res.status(200).json({
     status: 'success',
@@ -77,7 +80,14 @@ const deleteProduct = catchAsync(async (req, res, next) => {
   res.status(204);
 });
 
-const productsCategories = catchAsync(async (req, res, next) => {});
+const productsCategories = catchAsync(async (req, res, next) => {
+  const allCategories = await Categorie.findAll({});
+
+  res.status(200).json({
+    status: 'success',
+    allCategories,
+  });
+});
 
 const newCategorie = catchAsync(async (req, res, next) => {
   const { name } = req.body;

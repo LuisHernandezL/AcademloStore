@@ -19,7 +19,6 @@ const ProductInCart = db.define('productInCart', {
   quantity: {
     type: DataTypes.STRING,
     allowNull: false,
-    unique: true,
   },
   status: {
     type: DataTypes.STRING,
