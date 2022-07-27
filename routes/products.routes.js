@@ -34,7 +34,12 @@ productsRouter.get('/:id', productExist, productById);
 //protected end points
 productsRouter.use(protectSession);
 
-productsRouter.post('/', upload.single(), createProductValidators, newProduct);
+productsRouter.post(
+  '/',
+  upload.array('imgFile', 5),
+  createProductValidators,
+  newProduct
+);
 productsRouter.patch('/:id', protectUserAccount, productExist, updateProduct);
 productsRouter.delete('/:id', protectUserAccount, productExist, deleteProduct);
 productsRouter.post('/categories', newCategorie);
