@@ -94,64 +94,66 @@ head
     text-align: center;
     }
     }
-h1 Invoice From Academlo Store
-h3 Thanks for your purchase!
 
-br
-br
-br
-.invoice-box
-  table
-    tr.top
-      td(colspan='2')
-        table
-          tr
-            td.title
-              img(src='./images/logo.png' alt='Company logo' style='width: 100%; max-width: 300px')
-            td
-              | Invoice #: 123
-              br
-              | &#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;Created: January 1, 2015
-              br
-              | &#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;Due: February 1, 2015
-    tr.information
-      td(colspan='2')
-        table
-          tr
-            td
-              | AcademloStor, Inc.
-              br
-              | &#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;Maracaibo
-              br
-              | &#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;Venezuela
-            td
-              | Academlo.
-              br
-              | &#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;Luis Hernandez
-              br
-              | &#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;luishernandez2503@gmail.com
-    tr.heading
-      td Payment Method
-      td Check #
-    tr.details
-      td Check
-      td 1000
-    tr.heading
-      td Item
-      td Price
-      each post in posts
-					div(class="post-card")
-						h3 #{post.title}
-						p #{post.content}
-    tr.item
-      td Website design
-      td $300.00
-    tr.item
-      td Hosting (3 months)
-      td $75.00
-    tr.item.last
-      td Domain name (1 year)
-      td $10.00
-    tr.total
-      td
-      td Total: $385.00
+  body
+    h1 Invoice From Academlo Store
+    h3 Thanks for your purchase!
+
+    br
+    br
+    br
+    .invoice-box
+      table
+        tr.top
+          td(colspan='2')
+            table
+              tr
+                td.title
+                  img(src='./images/logo.png' alt='Company logo' style='width: 100%; max-width: 300px')
+                td
+                  | Invoice #: 123
+                  br
+                  | &#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;Created: January 1, 2015
+                  br
+                  | &#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;Due: February 1, 2015
+        tr.information
+          td(colspan='2')
+            table
+              tr
+                td
+                  | AcademloStor, Inc.
+                  br
+                  | &#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;Maracaibo
+                  br
+                  | &#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;Venezuela
+                td
+                  | Academlo.
+                  br
+                  | &#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;Luis Hernandez
+                  br
+                  | &#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;luishernandez2503@gmail.com
+        tr.heading
+          td Payment Method
+          td Check #
+        tr.details
+          td Check
+          td 1000
+        tr.heading
+          td Item
+          td Price
+        tr.item
+          each productInCart in findCart.productInCarts
+            td #{productInCart.product.title}
+            td #{productInCart.product.price}
+        tr.item
+          td Website design
+          td $300.00
+        tr.item
+          td Hosting (3 months)
+          td $75.00
+        tr.item.last
+          td Domain name (1 year)
+          td $10.00
+        tr.total
+          td
+          td Total: #{order.totalPrice}

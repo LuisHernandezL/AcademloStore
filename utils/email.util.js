@@ -61,8 +61,14 @@ class Email {
     });
   }
 
-  async sendInvoice(title, content) {
-    await this.send('invoice', 'Invoice', {});
+  async sendInvoice(totalPrice,
+    findCart,
+    order,
+    infoOrder) {
+    await this.send('invoice', 'Invoice', {totalPrice,
+      findCart,
+      order,
+      infoOrder});
   }
 }
 
