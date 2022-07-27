@@ -2,6 +2,7 @@
 const { Cart } = require('../models/cart.model');
 const { ProductInCart } = require('../models/productInCart.model');
 const { Product } = require('../models/product.model');
+const { Order } = require('../models/order.model');
 
 // Utils
 const { catchAsync } = require('../utils/catchAsync.util');
@@ -37,6 +38,9 @@ const addProduct = catchAsync(async (req, res, next) => {
       cartId: newCart.id,
       productId,
       quantity,
+    });
+    return res.status(200).json({
+      status: 'success',
     });
   }
 
@@ -183,14 +187,16 @@ const purchase = catchAsync(async (req, res, next) => {
     return next(new AppError('Not active cart found', 400));
   }
 
-  let total = [];
-  for (let index = 0; index < findCart[0].productInCarts.length; index++) {
-    console.log(findCart[0].productInCarts[index].dataValues?.quantity);
-    console.log(findCart[0].productInCarts[index].dataValues?.product.price);
+  let totalQuantity = 0;
+  let caclPrice = 0;
+  let finalPrice = 0;
 
-    let mult =
-      findCart[0].productInCarts[index].dataValues?.quantity *
-      findCart[0].productInCarts[index].dataValues?.product.price;
+  for (let index = 0; index < findCart[0].productInCarts.length; index++) {
+    totalQuantity += +findCart[0].productInCarts[index].quantity;
+    caclPrice += +findCart[0].productInCarts[index].product.price;
+    finalPrice +=
+      +findCart[0].productInCarts[index].quantity *
+      +findCart[0].productInCarts[index].product.price;
   }
 
   const updateQtyOnProduct = findCart[0].productInCarts.map(async (product) => {
@@ -210,11 +216,17 @@ const purchase = catchAsync(async (req, res, next) => {
 
   await Promise.all(updateQtyOnProduct);
 
+  const order = await Order.create({
+    userId: sessionUser.id,
+    cartId: findCart[0].id,
+    totalPrice: finalPrice,
+  });
+
   res.status(200).json({
     status: 'success',
     message: 'Purchased',
     findCart,
-    price,
+    order,
   });
 });
 
