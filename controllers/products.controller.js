@@ -31,9 +31,19 @@ const newProduct = catchAsync(async (req, res, next) => {
     userId: sessionUser.id,
   });
 
-  const imgRef = ref(storage, `${Date.now()}_${req.file.originalname}`);
+  if (req.file.length > 0) {
+    const filesPromises = req.file.map(async (file) => {
+      const imgRef = ref(storage, `${Date.now()}_${file.originalname}`);
+      const imgRes = await uploadBytes(imgRef, file.buffer);
 
-  const imgRes = await uploadBytes(imgRef, req.file.buffer);
+      return await ProductImg.create({
+        imgUrl: imgRes.metadata.fullPath,
+        productId: data.id,
+      });
+    });
+
+    await Promise.all(filesPromises);
+  }
 
   res.status(201).json({
     status: 'success',

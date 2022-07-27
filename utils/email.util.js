@@ -54,13 +54,6 @@ class Email {
     await this.send('welcome', 'Welcome to our app', { name });
   }
 
-  async sendNewPost(title, content) {
-    await this.send('newPost', 'You have created a new post', {
-      title,
-      content,
-    });
-  }
-
   async sendInvoice(totalPrice, findCart, order, infoUser) {
     await this.send('invoice', 'Invoice', {
       totalPrice,
