@@ -99,14 +99,15 @@ const updateCart = catchAsync(async (req, res, next) => {
   }
 
   const findProductInCart = await ProductInCart.findOne({
-    where: { productId },
+    where: { productId, cartId: findCart.id, status: 'active' }, //cambio aqui
   });
 
   if (!findProductInCart) {
     return next(new AppError('This user dont have this product on cart', 400));
   }
 
-  if (quantity === 0) {
+  if (quantity <= 0) {
+    //cambio aqui
     await findProductInCart.update({
       quantity: 0,
       status: 'removed',
