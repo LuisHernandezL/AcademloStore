@@ -1,5 +1,4 @@
 doctype html
-| PASTE YOUR HTML CODE HERE
 head
   meta(charset='utf-8')
   meta(name='viewport' content='width=device-width, initial-scale=1')
@@ -113,9 +112,9 @@ head
                 td
                   | Invoice #: 123
                   br
-                  | &#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;Created: January 1, 2015
+                  | &#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;Created: 
                   br
-                  | &#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;Due: February 1, 2015
+                  | &#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;Due: 
         tr.information
           td(colspan='2')
             table
@@ -129,31 +128,22 @@ head
                 td
                   | Academlo.
                   br
-                  | &#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;Luis Hernandez
+                  | &#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;#{infoUser.username}
                   br
-                  | &#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;luishernandez2503@gmail.com
+                  | &#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;#{infoUser.email}
         tr.heading
           td Payment Method
-          td Check #
+          td OrderId #
         tr.details
           td Check
-          td 1000
+          td #{order.id}
         tr.heading
           td Item
           td Price
-        tr.item
-          each productInCart in findCart.productInCarts
-            td #{productInCart.product.title}
-            td #{productInCart.product.price}
-        tr.item
-          td Website design
-          td $300.00
-        tr.item
-          td Hosting (3 months)
-          td $75.00
-        tr.item.last
-          td Domain name (1 year)
-          td $10.00
+        each productInCart in findCart.productInCarts 
+          tr.item
+              td #{productInCart.product.title}
+              td $#{productInCart.product.price}
         tr.total
           td
-          td Total: #{order.totalPrice}
+          td Total: $#{order.totalPrice}

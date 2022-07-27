@@ -25,6 +25,7 @@ const {
 const {
   createProductValidators,
 } = require('../middlewares/validators.middleware');
+const { upload } = require('../utils/upload.util');
 
 productsRouter.get('/', allProducts);
 productsRouter.get('/categories', productsCategories);
@@ -33,7 +34,7 @@ productsRouter.get('/:id', productExist, productById);
 //protected end points
 productsRouter.use(protectSession);
 
-productsRouter.post('/', createProductValidators, newProduct);
+productsRouter.post('/', upload.single(), createProductValidators, newProduct);
 productsRouter.patch('/:id', protectUserAccount, productExist, updateProduct);
 productsRouter.delete('/:id', protectUserAccount, productExist, deleteProduct);
 productsRouter.post('/categories', newCategorie);

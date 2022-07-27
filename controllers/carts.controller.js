@@ -4,7 +4,7 @@ const { ProductInCart } = require('../models/productInCart.model');
 const { Product } = require('../models/product.model');
 const { Order } = require('../models/order.model');
 const { Email } = require('../utils/email.util');
-const { User } = require('../models/user.model')
+const { User } = require('../models/user.model');
 
 // Utils
 const { catchAsync } = require('../utils/catchAsync.util');
@@ -223,17 +223,17 @@ const purchase = catchAsync(async (req, res, next) => {
     userId: sessionUser.id,
     cartId: findCart[0].id,
     totalPrice: finalPrice,
-    status: 'purchased'
+    status: 'purchased',
   });
-  
-  const infoOrder = await Order.findOne({where: {id: order.id}, include: [{model: User, required: false}]})
+
+  const infoUser = await User.findOne({ where: { id: sessionUser.id } });
 
   await new Email(sessionUser.email).sendInvoice(
     finalPrice,
     findCart[0],
     order,
-    infoOrder
-  )
+    infoUser
+  );
 
   res.status(200).json({
     status: 'success',

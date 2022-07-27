@@ -1,5 +1,4 @@
-//Db
-const { db, DataTypes } = require('../utils/database.util');
+const { ref, uploadBytes } = require('firebase/storage');
 
 //Models
 const { Product } = require('../models/product.model');
@@ -9,10 +8,13 @@ const { Categorie } = require('../models/categorie.model');
 //Utils
 const { AppError } = require('../utils/appError.util');
 const { catchAsync } = require('../utils/catchAsync.util');
+const { storage } = require('../utils/firebase.util');
 
 const newProduct = catchAsync(async (req, res, next) => {
   const { sessionUser } = req;
   const { title, description, price, categoryId, quantity } = req.body;
+
+  console.log(req.file);
 
   const categoryExist = await Categorie.findOne({ where: { id: categoryId } });
 
@@ -28,6 +30,10 @@ const newProduct = catchAsync(async (req, res, next) => {
     quantity,
     userId: sessionUser.id,
   });
+
+  const imgRef = ref(storage, `${Date.now()}_${req.file.originalname}`);
+
+  const imgRes = await uploadBytes(imgRef, req.file.buffer);
 
   res.status(201).json({
     status: 'success',
