@@ -55,4 +55,14 @@ const protectUserAccount = (req, res, next) => {
   next();
 };
 
-module.exports = { protectSession, protectUserAccount };
+const protectProduct = (req, res, next) => {
+  const { sessionUser, product } = req;
+
+  if (sessionUser.id !== product.userId) {
+    return next(new AppError('You do not own this product', 403));
+  }
+
+  next();
+};
+
+module.exports = { protectSession, protectUserAccount, protectProduct };

@@ -5,7 +5,7 @@ const productsRouter = express.Router();
 //Middleware
 const {
   protectSession,
-  protectUserAccount,
+  protectProduct,
 } = require('../middlewares/auth.middleware');
 const { productExist } = require('../middlewares/productExist.middleware');
 
@@ -40,8 +40,8 @@ productsRouter.post(
   createProductValidators,
   newProduct
 );
-productsRouter.patch('/:id', protectUserAccount, productExist, updateProduct);
-productsRouter.delete('/:id', protectUserAccount, productExist, deleteProduct);
+productsRouter.patch('/:id', productExist, protectProduct, updateProduct);
+productsRouter.delete('/:id', productExist, protectProduct, deleteProduct);
 productsRouter.post('/categories', newCategorie);
 productsRouter.patch('/categories/:id', updateCategorie);
 
